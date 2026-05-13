@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://YOUR-GATEWAY.onrender.com'  // ← change this
+  apiUrl: 'https://flowboard-gateway.onrender.com'
 };
