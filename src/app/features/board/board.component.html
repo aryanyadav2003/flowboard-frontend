@@ -1,0 +1,132 @@
+<div class="board-container" *ngIf="board">
+  
+  <div class="board-header">
+    <div class="header-left">
+      <button class="btn-back" (click)="goBack()">← Back to Workspace</button>
+      <h2>{{ board.name }}</h2>
+      <span class="badge">{{ board.visibility }}</span>
+    </div>
+    
+    <div class="header-right">
+      <div class="members-group">
+        <div class="member-avatar" title="Members">👥 {{ board.memberCount }}</div>
+      </div>
+      <button *ngIf="canManageBoard()" class="btn btn-primary" (click)="openListModal()">
+        ➕ Add List
+      </button>
+    </div>
+  </div>
+
+  <div class="error-msg" *ngIf="errorMsg">{{ errorMsg }}</div>
+  <app-spinner [loading]="loading"></app-spinner>
+
+  <div class="board-canvas" *ngIf="!loading">
+    <div class="list-wrapper" *ngFor="let list of lists">
+      <div class="list-content">
+        <div class="list-header">
+          <h3>{{ list.name }}</h3>
+          <button *ngIf="canManageBoard()" class="btn-icon list-delete" (click)="deleteList(list.listId)" title="Delete list">
+            ✕
+          </button>
+        </div>
+
+        <div class="cards-container">
+          <div
+            *ngFor="let card of getCardsForList(list.listId)"
+            class="kanban-card"
+            (click)="openCard(card.cardId)">
+            
+            <div class="card-labels">
+              <div class="card-labels-dots" *ngIf="card.labels && card.labels.length > 0">
+                <div *ngFor="let l of card.labels" class="label-dot" [style.background-color]="l.color" [title]="l.name"></div>
+              </div>
+              <span class="priority-indicator" [ngClass]="getPriorityClass(card.priority)"></span>
+              <span class="due-badge" *ngIf="card.dueDate" [class.overdue]="card.isOverdue">
+                📅 {{ card.dueDate | date:'MMM dd' }}
+              </span>
+            </div>
+            
+            <h4 class="card-title">{{ card.title }}</h4>
+            
+            <div class="card-footer">
+              <div class="card-icons">
+                <span *ngIf="card.description" title="Has description">≡</span>
+              </div>
+              <div class="card-assignees">
+                <div class="assignee-avatar" *ngFor="let a of card.assignees" title="Assigned">
+                  👤 {{ a.userId }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Delete button overlay for users with permission -->
+            <button 
+              *ngIf="canDeleteCard(card)" 
+              class="btn-delete-card" 
+              (click)="deleteCard(card.cardId, $event)" 
+              title="Delete Card">
+              🗑️
+            </button>
+          </div>
+        </div>
+
+        <div class="list-footer" *ngIf="canCreateCard()">
+          <button class="btn-add-card" (click)="openCardModal(list.listId)">
+            ➕ Add a card
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Empty state for no lists -->
+    <div class="empty-board" *ngIf="lists.length === 0 && canManageBoard()">
+      <p>This board is empty. Add a list to get started!</p>
+      <button class="btn btn-primary" (click)="openListModal()">Add your first list</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add List Modal -->
+<div class="modal-overlay" *ngIf="showListModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Add New List</h3>
+      <button class="modal-close" (click)="closeListModal()">✕</button>
+    </div>
+    <div class="form-group">
+      <label>List Name</label>
+      <input type="text" [(ngModel)]="newListName" placeholder="e.g., To Do, In Progress, Done" />
+    </div>
+    <div class="modal-actions" style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+      <button class="btn btn-secondary" (click)="closeListModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="createList()">Add List</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Card Modal -->
+<div class="modal-overlay" *ngIf="showCardModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Add New Card</h3>
+      <button class="modal-close" (click)="closeCardModal()">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Card Title</label>
+      <input type="text" [(ngModel)]="newCardTitle" placeholder="What needs to be done?" />
+    </div>
+    <div class="form-group">
+      <label>Priority</label>
+      <select [(ngModel)]="newCardPriority">
+        <option value="LOW">Low</option>
+        <option value="MEDIUM">Medium</option>
+        <option value="HIGH">High</option>
+        <option value="CRITICAL">Critical</option>
+      </select>
+    </div>
+    <div class="modal-actions" style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+      <button class="btn btn-secondary" (click)="closeCardModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="createCard()">Add Card</button>
+    </div>
+  </div>
+</div>

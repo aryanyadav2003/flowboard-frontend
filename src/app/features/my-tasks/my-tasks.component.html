@@ -1,0 +1,46 @@
+<div class="my-tasks-container">
+
+  <div class="tasks-header">
+    <h2>📋 My Assigned Tasks</h2>
+    <p class="tasks-subtitle">All cards assigned to you across all workspaces</p>
+  </div>
+
+  <app-spinner [loading]="loading"></app-spinner>
+
+  <div class="error-msg" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+  <div class="empty-state" *ngIf="!loading && tasks.length === 0 && !errorMsg">
+    <div class="empty-icon">🎉</div>
+    <h3>No tasks assigned</h3>
+    <p>You have no tasks assigned to you yet. Ask your workspace admin to assign you to a card!</p>
+  </div>
+
+  <div class="tasks-grid" *ngIf="!loading && tasks.length > 0">
+    <div
+      *ngFor="let task of tasks"
+      class="task-card"
+      (click)="openCard(task.cardId)">
+
+      <div class="task-card-top">
+        <span class="task-status-icon">{{ getStatusIcon(task.status) }}</span>
+        <span class="task-priority-badge" [ngClass]="getPriorityClass(task.priority)">
+          {{ task.priority }}
+        </span>
+      </div>
+
+      <h4 class="task-title">{{ task.title }}</h4>
+
+      <p class="task-desc" *ngIf="task.description">
+        {{ task.description | slice:0:80 }}{{ task.description?.length > 80 ? '...' : '' }}
+      </p>
+
+      <div class="task-meta">
+        <span class="task-status">{{ task.status?.replace('_', ' ') }}</span>
+        <span class="task-due" *ngIf="task.dueDate" [class.overdue]="task.isOverdue">
+          📅 {{ task.dueDate | date:'MMM dd' }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,216 @@
+<div class="card-detail-container" *ngIf="card">
+  
+  <div class="card-header-bar">
+    <button class="btn-back" (click)="goBack()">← Back to Board</button>
+    <div class="header-actions" *ngIf="canDelete()">
+      <button class="btn btn-danger btn-sm" (click)="deleteCard()">🗑️ Delete Card</button>
+    </div>
+  </div>
+
+  <div class="card-content-layout">
+    
+    <!-- LEFT COLUMN: Main Content -->
+    <div class="main-column">
+      
+      <div class="title-section">
+        <h1 class="card-title" *ngIf="!editingTitle">
+          {{ card.title }}
+          <button *ngIf="canEdit()" class="btn-icon" (click)="editingTitle = true">✏️</button>
+        </h1>
+        <div *ngIf="editingTitle" class="edit-title-form">
+          <input type="text" [(ngModel)]="editTitleValue" class="title-input" />
+          <div class="edit-actions">
+            <button class="btn btn-primary btn-sm" (click)="saveTitle()">Save</button>
+            <button class="btn btn-secondary btn-sm" (click)="editingTitle = false">Cancel</button>
+          </div>
+        </div>
+        <div class="meta-row">
+          <span class="meta-item">in list <strong>{{ card.listId }}</strong></span>
+          <span class="meta-item priority-badge" [ngClass]="getPriorityClass(card.priority)">
+            Priority: {{ card.priority }}
+          </span>
+          <span class="meta-item status-badge" *ngIf="card.status">
+            Status: {{ card.status.replace('_', ' ') }}
+          </span>
+          <div class="meta-item due-date-picker">
+            📅 Due Date: 
+            <input type="date" [ngModel]="card.dueDate | date:'yyyy-MM-dd'" (ngModelChange)="saveDueDate($event)" [disabled]="!canEdit()" />
+            <span class="overdue-warning" *ngIf="card.isOverdue">OVERDUE!</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="description-section">
+        <h3>Description <button *ngIf="canEdit() && !editingDesc" class="btn-icon" (click)="startEditDesc()">✏️</button></h3>
+        
+        <div *ngIf="!editingDesc" class="desc-content" [class.empty]="!card.description">
+          {{ card.description || 'Add a more detailed description...' }}
+        </div>
+
+        <div *ngIf="editingDesc" class="edit-desc-form">
+          <textarea [(ngModel)]="editDescValue" rows="4" placeholder="Add a more detailed description..."></textarea>
+          <div class="edit-actions">
+            <button class="btn btn-primary" (click)="saveDesc()">Save</button>
+            <button class="btn btn-secondary" (click)="editingDesc = false">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Checklists -->
+      <div class="checklists-section">
+        <div class="section-header">
+          <h3>Checklists</h3>
+          <button *ngIf="canEdit()" class="btn btn-secondary btn-sm" (click)="showAddChecklist = true">
+            ➕ Add Checklist
+          </button>
+        </div>
+
+        <div *ngIf="showAddChecklist" class="add-checklist-form card">
+          <input type="text" [(ngModel)]="newChecklistTitle" placeholder="Checklist title..." />
+          <div class="edit-actions">
+            <button class="btn btn-primary btn-sm" (click)="addChecklist()">Add</button>
+            <button class="btn btn-secondary btn-sm" (click)="showAddChecklist = false">Cancel</button>
+          </div>
+        </div>
+
+        <div class="checklist-item" *ngFor="let cl of checklists">
+          <div class="checklist-header">
+            <h4>📋 {{ cl.title }}</h4>
+            <button *ngIf="canEdit()" class="btn-icon text-danger" (click)="deleteChecklist(cl.checklistId)">🗑️</button>
+          </div>
+          
+          <div class="progress-bar-container">
+            <div class="progress-text">{{ getChecklistProgress(cl) }}%</div>
+            <div class="progress-track">
+              <div class="progress-fill" [style.width.%]="getChecklistProgress(cl)" [class.complete]="getChecklistProgress(cl) === 100"></div>
+            </div>
+          </div>
+
+          <div class="checklist-items-list">
+            <div class="cl-item" *ngFor="let item of cl.items" [class.completed]="item.isCompleted">
+              <input type="checkbox" [checked]="item.isCompleted" (change)="toggleItem(item)" />
+              <span class="item-name">{{ item.text }}</span>
+              <button *ngIf="canEdit()" class="btn-icon" (click)="deleteItem(item.itemId)">✕</button>
+            </div>
+          </div>
+
+          <div class="add-item-form" *ngIf="canEdit()">
+            <input type="text" [(ngModel)]="newItemNames[cl.checklistId]" placeholder="Add an item..." (keyup.enter)="addItem(cl.checklistId)" />
+            <button class="btn btn-secondary btn-sm" (click)="addItem(cl.checklistId)">Add</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Comments -->
+      <div class="comments-section">
+        <h3>Activity</h3>
+        
+        <div class="add-comment-box">
+          <div class="comment-avatar">{{ currentUser?.fullName?.charAt(0)?.toUpperCase() || 'U' }}</div>
+          <div class="comment-input-area">
+            <textarea [(ngModel)]="newCommentText" rows="2" placeholder="Write a comment..."></textarea>
+            <button class="btn btn-primary btn-sm" [disabled]="!newCommentText.trim()" (click)="addComment()">Save</button>
+          </div>
+        </div>
+
+        <div class="comments-list">
+          <div class="comment-item" *ngFor="let c of comments">
+            <div class="comment-avatar">U</div>
+            <div class="comment-content">
+              <div class="comment-header">
+                <span class="comment-author">User {{ c.userId }}</span>
+                <span class="comment-time">{{ c.createdAt | date:'MMM d, h:mm a' }}</span>
+              </div>
+              <div class="comment-text">{{ c.content }}</div>
+              <div class="comment-actions" *ngIf="canDeleteComment(c)">
+                <button class="btn-link" (click)="deleteComment(c.commentId)">Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: Sidebar -->
+    <div class="sidebar-column">
+      
+      <div class="sidebar-module">
+        <h4>Labels</h4>
+        <div class="active-labels">
+          <div *ngFor="let l of labels" class="label-pill" [style.background-color]="l.labelColor">
+            {{ l.labelName }}
+          </div>
+        </div>
+        <button *ngIf="canEdit()" class="btn btn-secondary btn-block" (click)="showLabelManager = !showLabelManager">
+          🏷️ Manage Labels
+        </button>
+
+        <!-- Label Manager Popover -->
+        <div class="label-manager-box" *ngIf="showLabelManager">
+          <div class="search-header">
+            <span>Labels</span>
+            <button class="btn-icon" (click)="showLabelManager = false">✕</button>
+          </div>
+          
+          <div class="label-selector">
+            <div *ngFor="let bl of allBoardLabels" class="label-select-item" (click)="toggleLabel(bl)">
+              <div class="label-color-preview" [style.background-color]="bl.color"></div>
+              <span class="label-name">{{ bl.name }}</span>
+              <span class="check-icon" *ngIf="isLabelAssigned(bl.labelId)">✓</span>
+            </div>
+          </div>
+
+          <div class="create-label-form" *ngIf="canEdit()">
+            <hr>
+            <h5>Create New Label</h5>
+            <input type="text" [(ngModel)]="newLabelName" placeholder="Label name..." />
+            
+            <div class="color-presets">
+              <div class="preset-btn" style="background-color: #ef4444" (click)="newLabelColor = '#ef4444'" [class.active]="newLabelColor === '#ef4444'" title="Red"></div>
+              <div class="preset-btn" style="background-color: #22c55e" (click)="newLabelColor = '#22c55e'" [class.active]="newLabelColor === '#22c55e'" title="Green"></div>
+              <div class="preset-btn" style="background-color: #3b82f6" (click)="newLabelColor = '#3b82f6'" [class.active]="newLabelColor === '#3b82f6'" title="Blue"></div>
+              <input type="color" [(ngModel)]="newLabelColor" class="custom-color-input" />
+            </div>
+
+            <button class="btn btn-primary btn-sm btn-block" (click)="createLabel()">Create Label</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-module">
+        <h4>Assignees</h4>
+        <div class="assignee-list">
+          <div class="assignee-chip" *ngFor="let a of assignees">
+            <div class="assignee-avatar">👤</div>
+            <span>User {{ a.userId }}</span>
+            <button *ngIf="canEdit()" class="btn-icon text-danger" (click)="unassignUser(a.userId)">✕</button>
+          </div>
+        </div>
+        <button *ngIf="canEdit() && !showUserSearch" class="btn btn-secondary btn-block" (click)="showUserSearch = true">
+          ➕ Assign member
+        </button>
+        <div class="user-search-box" *ngIf="showUserSearch">
+          <div class="search-header">
+            <span>Assign Member</span>
+            <button class="btn-icon" (click)="showUserSearch = false">✕</button>
+          </div>
+          <input type="text" [(ngModel)]="userSearchQuery" (keyup)="searchUsers()" placeholder="Search users..." />
+          <div class="search-results">
+            <div class="search-item" *ngFor="let u of foundUsers" (click)="assignOtherUser(u.userId)">
+              {{ u.fullName }} ({{ u.email }})
+            </div>
+            <div class="search-empty" *ngIf="foundUsers.length === 0 && userSearchQuery">No users found</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-module">
+        <h4>Actions</h4>
+        <button *ngIf="canEdit()" class="btn btn-secondary btn-block" (click)="moveCard()">➡️ Move</button>
+        <button *ngIf="canEdit()" class="btn btn-secondary btn-block" (click)="archiveCard()">📦 Archive</button>
+      </div>
+
+    </div>
+  </div>
+</div>

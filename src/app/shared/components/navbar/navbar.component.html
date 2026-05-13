@@ -1,0 +1,28 @@
+<nav class="navbar">
+  <div class="navbar-brand" routerLink="/workspaces">
+    <span class="brand-icon">🗂️</span>
+    <span class="brand-text">FlowBoard</span>
+  </div>
+
+  <div class="navbar-links" *ngIf="currentUser">
+    <a routerLink="/workspaces" routerLinkActive="active" class="nav-link">
+      🏠 Workspaces
+    </a>
+    <a routerLink="/my-tasks" routerLinkActive="active" class="nav-link">
+      📋 My Tasks
+    </a>
+  </div>
+
+  <div class="navbar-right" *ngIf="currentUser">
+    <div class="user-chip">
+      <div class="user-avatar" *ngIf="currentUser.fullName">{{ currentUser.fullName.charAt(0).toUpperCase() }}</div>
+      <div class="user-info">
+        <span class="user-name">{{ currentUser.fullName }}</span>
+        <span class="user-role-badge" [class.admin-badge]="currentUser.role === 'PlatformAdmin'">
+          {{ currentUser.role === 'PlatformAdmin' ? '⚡ Admin' : '👤 Member' }}
+        </span>
+      </div>
+    </div>
+    <button class="btn-logout" (click)="logout()">Sign Out</button>
+  </div>
+</nav>

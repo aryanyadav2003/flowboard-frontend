@@ -1,0 +1,70 @@
+<div class="auth-layout">
+  <div class="auth-sidebar">
+    <div class="branding">
+      <div class="logo">🗂️ FlowBoard</div>
+      <p class="tagline">Join thousands of teams<br>building better software.</p>
+    </div>
+  </div>
+
+  <div class="auth-content">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h2>Create an account</h2>
+        <p>Start organizing your work in seconds</p>
+      </div>
+
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" formControlName="fullName" placeholder="Jane Doe" />
+          <div class="error-text" *ngIf="registerForm.get('fullName')?.invalid && registerForm.get('fullName')?.touched">
+            Name is required.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" formControlName="email" placeholder="you@company.com" />
+          <div class="error-text" *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+            Please enter a valid email.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" formControlName="username" placeholder="janesmith" />
+          <div class="error-text" *ngIf="registerForm.get('username')?.invalid && registerForm.get('username')?.touched">
+            Username is required (min 3 chars).
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" formControlName="password" placeholder="••••••••" />
+          <div class="error-text" *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+            Password must be at least 8 characters.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Account Type</label>
+          <select formControlName="role">
+            <option value="Member">Standard User (Member)</option>
+            <option value="PlatformAdmin">Administrator</option>
+          </select>
+        </div>
+
+        <div class="error-msg" *ngIf="errorMsg">{{ errorMsg }}</div>
+        <div class="success-msg" *ngIf="successMsg">{{ successMsg }}</div>
+
+        <button type="submit" class="btn btn-primary btn-block">
+          {{ loading ? 'Creating account...' : 'Create Account' }}
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        Already have an account? <a routerLink="/login">Sign in</a>
+      </div>
+    </div>
+  </div>
+</div>

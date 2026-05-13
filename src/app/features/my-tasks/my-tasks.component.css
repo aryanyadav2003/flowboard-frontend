@@ -1,0 +1,141 @@
+.my-tasks-container {
+  padding: 32px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.tasks-header {
+  margin-bottom: 28px;
+}
+
+.tasks-header h2 {
+  font-size: 26px;
+  font-weight: 700;
+  color: #1e1b4b;
+  margin-bottom: 6px;
+}
+
+.tasks-subtitle {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.tasks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.task-card {
+  background: white;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(79, 70, 229, 0.08);
+  border: 1px solid #e8e6f9;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.task-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.16);
+}
+
+.task-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.task-status-icon {
+  font-size: 18px;
+}
+
+.task-priority-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.priority-low    { background: #d1fae5; color: #065f46; }
+.priority-medium { background: #fef3c7; color: #92400e; }
+.priority-high   { background: #fee2e2; color: #991b1b; }
+.priority-critical { background: #7c3aed; color: white; }
+
+.task-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e1b4b;
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+
+.task-desc {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0 0 14px 0;
+  line-height: 1.5;
+}
+
+.task-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.task-status {
+  color: #4f46e5;
+  font-weight: 600;
+  background: #eef2ff;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+.task-due {
+  color: #6b7280;
+}
+
+.task-due.overdue {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: #6b7280;
+}
+
+.empty-state .empty-icon {
+  font-size: 56px;
+  margin-bottom: 16px;
+}
+
+.empty-state h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.empty-state p {
+  font-size: 14px;
+  max-width: 360px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.error-msg {
+  color: #ef4444;
+  background: #fef2f2;
+  border-left: 3px solid #ef4444;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}

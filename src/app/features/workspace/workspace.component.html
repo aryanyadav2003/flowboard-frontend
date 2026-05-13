@@ -1,0 +1,161 @@
+<div class="workspace-container">
+
+  <!-- WORKSPACES TAB -->
+  <div class="workspace-split">
+    
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h3>Your Workspaces</h3>
+        <button class="btn-icon" (click)="openCreateModal()" title="New workspace">➕</button>
+      </div>
+
+      <div class="workspace-list">
+        <div
+          *ngFor="let ws of workspaces"
+          class="workspace-item"
+          [class.active]="selectedWorkspace?.workspaceId === ws.workspaceId"
+          (click)="selectWorkspace(ws)">
+          <div class="workspace-avatar">{{ ws.name.charAt(0).toUpperCase() }}</div>
+          <div class="workspace-info">
+            <div class="workspace-name">{{ ws.name }}</div>
+            <div class="workspace-meta">{{ ws.memberCount }} members</div>
+          </div>
+          <button
+            class="btn-delete"
+            (click)="deleteWorkspace(ws.workspaceId, $event)"
+            title="Delete workspace">
+            🗑️
+          </button>
+        </div>
+      </div>
+
+      <div class="sidebar-footer" *ngIf="workspaces.length === 0 && !loadingWorkspaces">
+        <div class="empty-mini">
+          <span>No workspaces yet</span>
+          <button class="btn btn-sm btn-primary" (click)="openCreateModal()">Create One</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <app-spinner [loading]="loadingWorkspaces"></app-spinner>
+
+      <!-- No Workspace Selected -->
+      <div *ngIf="!selectedWorkspace && !loadingWorkspaces && workspaces.length > 0" class="empty-state">
+        <div class="empty-icon">👈</div>
+        <h3>Select a workspace</h3>
+        <p>Choose a workspace from the sidebar to view its boards.</p>
+      </div>
+
+      <!-- No Workspaces At All -->
+      <div *ngIf="!selectedWorkspace && !loadingWorkspaces && workspaces.length === 0" class="empty-state">
+        <div class="empty-icon">🚀</div>
+        <h3>Welcome to FlowBoard</h3>
+        <p>You don't belong to any workspaces yet. Create one to start collaborating!</p>
+        <button class="btn btn-primary" style="margin-top: 16px" (click)="openCreateModal()">
+          Create Workspace
+        </button>
+      </div>
+
+      <!-- Workspace View -->
+      <div *ngIf="selectedWorkspace && !loadingWorkspaces" class="workspace-view">
+        <div class="view-header">
+          <div class="header-left">
+            <h1>{{ selectedWorkspace.name }}</h1>
+            <p class="workspace-description">
+              <span class="badge">{{ selectedWorkspace.visibility }}</span>
+              {{ selectedWorkspace.description || 'Manage your boards and team members here.' }}
+            </p>
+          </div>
+          <button class="btn btn-primary" (click)="openBoardModal()">➕ New Board</button>
+        </div>
+
+        <div class="error-msg" *ngIf="errorMsg">{{ errorMsg }}</div>
+        <app-spinner [loading]="loadingBoards"></app-spinner>
+
+        <!-- Boards Grid -->
+        <div class="boards-grid" *ngIf="!loadingBoards">
+          <div
+            *ngFor="let board of boards; let i = index"
+            class="board-card"
+            (click)="openBoard(board)">
+            <div class="board-cover" [class]="'cover-' + (i % 5)"></div>
+            <div class="board-content">
+              <h3>{{ board.name }}</h3>
+              <p class="board-meta">📌 {{ board.memberCount }} members</p>
+            </div>
+            <button
+              class="btn-delete-board"
+              (click)="deleteBoard(board.boardId, $event)"
+              title="Delete board">
+              🗑️
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="boards.length === 0 && !loadingBoards" class="empty-boards">
+          <div class="empty-icon">📋</div>
+          <p>No boards yet. Create one to start organizing tasks!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Workspace Modal -->
+<div class="modal-overlay" *ngIf="showCreateModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Create Workspace</h3>
+      <button class="modal-close" (click)="closeCreateModal()" [disabled]="loadingWorkspaces">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Workspace Name</label>
+      <input type="text" [(ngModel)]="newWorkspaceName" placeholder="e.g., Engineering Team" [disabled]="loadingWorkspaces" />
+    </div>
+    <div class="form-group">
+      <label>Visibility</label>
+      <select [(ngModel)]="newWorkspaceVis" [disabled]="loadingWorkspaces">
+        <option value="PRIVATE">Private</option>
+        <option value="PUBLIC">Public</option>
+      </select>
+    </div>
+    <div class="error-msg" *ngIf="errorMsg">{{ errorMsg }}</div>
+    <div class="modal-actions" style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+      <button class="btn btn-secondary" (click)="closeCreateModal()" [disabled]="loadingWorkspaces">Cancel</button>
+      <button class="btn btn-primary" (click)="createWorkspace()" [disabled]="loadingWorkspaces">
+        {{ loadingWorkspaces ? 'Creating...' : 'Create Workspace' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Create Board Modal -->
+<div class="modal-overlay" *ngIf="showBoardModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Create Board</h3>
+      <button class="modal-close" (click)="closeBoardModal()" [disabled]="loadingBoards">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Board Name</label>
+      <input type="text" [(ngModel)]="newBoardName" placeholder="e.g., Sprint 1" [disabled]="loadingBoards" />
+    </div>
+    <div class="form-group">
+      <label>Visibility</label>
+      <select [(ngModel)]="newBoardVis" [disabled]="loadingBoards">
+        <option value="PRIVATE">Private</option>
+        <option value="PUBLIC">Public</option>
+      </select>
+    </div>
+    <div class="error-msg" *ngIf="errorMsg">{{ errorMsg }}</div>
+    <div class="modal-actions" style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+      <button class="btn btn-secondary" (click)="closeBoardModal()" [disabled]="loadingBoards">Cancel</button>
+      <button class="btn btn-primary" (click)="createBoard()" [disabled]="loadingBoards">
+        {{ loadingBoards ? 'Creating...' : 'Create Board' }}
+      </button>
+    </div>
+  </div>
+</div>
